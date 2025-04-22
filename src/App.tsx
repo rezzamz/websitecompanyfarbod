@@ -1,495 +1,310 @@
 // App.tsx
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FiSun, 
-  FiMoon, 
+import React, { useState } from 'react';
+import './App.css';
+import barakatLogo from './assest/image/logob.png';
+import adminpanel from './assest/image/adminp.png';
+import mobileapp from './assest/image/mobileap.png';
+import websitedesign from './assest/image/web d.png';
+import Logof from './assest/image/logo123.png';
+import abus from './assest/image/about.png';
+type Language = 'fa' | 'en';
+type Theme = 'light' | 'dark';
 
-  FiLinkedin,
-  FiTwitter,
-  FiInstagram,
-  FiPhone,
-  FiMail,
-  FiMapPin,
+interface Service {
+  title: { fa: string; en: string };
+  description: { fa: string; en: string };
+  icon: string;
+}
 
-} from 'react-icons/fi';
-import { 
-  FaDesktop, 
-  FaMobileAlt, 
-  FaChartLine, 
-  FaShieldAlt,
-  FaLanguage,
+interface PortfolioItem {
+  title: { fa: string; en: string };
+  category: { fa: string; en: string };
+  image: string;
+}
 
-} from 'react-icons/fa';
-import styles from './App.module.css';
-
-// i18n setup
-type Translations = {
-  [key: string]: {
-    [key: string]: string;
-  };
-};
-
-const translations: Translations = {
-  en: {
-    home: "Home",
-    services: "Services",
-    portfolio: "Portfolio",
-    about: "About Us",
-    contact: "Contact",
-    heroTitle: "We Specialize in Digital Solutions",
-    heroSubtitle: "We help businesses shine in the digital world",
-    ctaButton: "Start Collaboration",
-    servicesTitle: "Our Services",
-    servicesSubtitle: "What We Offer",
-    webDevelopment: "Web Development",
-    webDesc: "Custom website design and development with the latest technologies",
-    mobileDevelopment: "Mobile App Development",
-    mobileDesc: "Building high-performance iOS and Android applications",
-    dataAnalysis: "Data Analysis",
-    dataDesc: "Business intelligence and data analysis for better decision making",
-    cybersecurity: "Cybersecurity",
-    cyberDesc: "Protecting your business against cyber threats",
-    portfolioTitle: "Our Portfolio",
-    portfolioSubtitle: "Some of Our Recent Projects",
-    ecommerce: "E-commerce Website",
-    ecommerceDesc: "Design and development of an e-commerce platform",
-    financeApp: "Finance App",
-    financeDesc: "Personal finance management application",
-    cms: "Content Management System",
-    cmsDesc: "Custom CMS platform for content publishers",
-    clientsTitle: "Our Clients",
-    clientsSubtitle: "Companies Who Trusted Us",
-    aboutTitle: "About Us",
-    aboutText1: "Navaran Company was established in 2011 with the aim of providing innovative digital solutions.",
-    aboutText2: "Our mission is to deliver innovative and high-quality solutions that help our clients grow and succeed.",
-    address: "Tehran, Azadi Street, No. 123",
-    phone: "021-12345678",
-    mobile: "09123456789",
-    email: "info@navaran.com",
-    quickLinks: "Quick Links",
-    copyright: "© Navaran Company. All rights reserved.",
-    darkMode: "Dark Mode",
-    language: "Language"
-  },
-  fa: {
-    home: "صفحه اصلی",
-    services: "خدمات",
-    portfolio: "نمونه کارها",
-    about: "درباره ما",
-    contact: "تماس با ما",
-    heroTitle: "تخصص ما در ایجاد راهکارهای دیجیتال",
-    heroSubtitle: "ما به کسب‌وکارها کمک می‌کنیم تا در دنیای دیجیتال بدرخشند",
-    ctaButton: "شروع همکاری",
-    servicesTitle: "خدمات ما",
-    servicesSubtitle: "آنچه ارائه می‌دهیم",
-    webDevelopment: "توسعه وب",
-    webDesc: "طراحی و توسعه وبسایت‌های سفارشی با آخرین تکنولوژی‌ها",
-    mobileDevelopment: "توسعه اپلیکیشن موبایل",
-    mobileDesc: "ساخت اپلیکیشن‌های iOS و Android با عملکرد عالی",
-    dataAnalysis: "تحلیل داده",
-    dataDesc: "راهکارهای هوش تجاری و تحلیل داده برای تصمیم‌گیری بهتر",
-    cybersecurity: "امنیت سایبری",
-    cyberDesc: "محافظت از کسب‌وکار شما در برابر تهدیدات سایبری",
-    portfolioTitle: "نمونه کارهای ما",
-    portfolioSubtitle: "برخی از پروژه‌های اخیر",
-    ecommerce: "وبسایت فروشگاهی",
-    ecommerceDesc: "طراحی و توسعه یک پلتفرم تجارت الکترونیک",
-    financeApp: "اپلیکیشن مالی",
-    financeDesc: "اپلیکیشن مدیریت مالی شخصی",
-    cms: "سیستم مدیریت محتوا",
-    cmsDesc: "پلتفرم سفارشی CMS برای ناشران محتوا",
-    clientsTitle: "همکاران ما",
-    clientsSubtitle: "شرکت‌هایی که به ما اعتماد کرده‌اند",
-    aboutTitle: "درباره ما",
-    aboutText1: "شرکت نوآوران در سال ۱۳۹۰ با هدف ارائه راهکارهای دیجیتال خلاقانه تأسیس شد.",
-    aboutText2: "مأموریت ما ارائه راهکارهای نوآورانه و با کیفیت است که به رشد و موفقیت مشتریانمان کمک کند.",
-    address: "تهران، خیابان آزادی، پلاک ۱۲۳",
-    phone: "۰۲۱-۱۲۳۴۵۶۷۸",
-    mobile: "۰۹۱۲۳۴۵۶۷۸۹",
-    email: "info@navaran.com",
-    quickLinks: "لینک‌های سریع",
-    copyright: "© شرکت نوآوران. تمام حقوق محفوظ است.",
-    darkMode: "حالت تاریک",
-    language: "زبان"
-  }
-};
+interface Partner {
+  name: string;
+  logo: string;
+}
 
 const App: React.FC = () => {
-  const [darkMode, setDarkMode] = useState(false);
-  const [language, setLanguage] = useState<'en' | 'fa'>('fa');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
-
-  const t = (key: string) => translations[language][key] || key;
+  const [language, setLanguage] = useState<Language>('fa');
+  const [theme, setTheme] = useState<Theme>('light');
 
   const toggleLanguage = () => {
-    setLanguage(prev => prev === 'fa' ? 'en' : 'fa');
+    setLanguage(language === 'fa' ? 'en' : 'fa');
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(prev => !prev);
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
   };
 
-  const toggleMenu = () => {
-    setIsMenuOpen(prev => !prev);
-  };
-
-  const serviceItems = [
+  const services: Service[] = [
     {
-      icon: <FaDesktop className={styles.serviceIconInner} />,
-      title: t('webDevelopment'),
-      desc: t('webDesc'),
-      color: '#FFD700'
+      title: { fa: 'طراحی وب', en: 'Web Design' },
+      description: {
+        fa: 'طراحی وبسایت های مدرن و واکنش گرا برای کسب و کار شما',
+        en: 'Modern and responsive website design for your business'
+      },
+      icon: '💻'
     },
     {
-      icon: <FaMobileAlt className={styles.serviceIconInner} />,
-      title: t('mobileDevelopment'),
-      desc: t('mobileDesc'),
-      color: '#1E90FF'
+      title: { fa: 'توسعه نرم افزار', en: 'Software Development' },
+      description: {
+        fa: 'توسعه نرم افزارهای سفارشی متناسب با نیازهای شما',
+        en: 'Custom software development tailored to your needs'
+      },
+      icon: '📱'
     },
     {
-      icon: <FaChartLine className={styles.serviceIconInner} />,
-      title: t('dataAnalysis'),
-      desc: t('dataDesc'),
-      color: '#FFD700'
-    },
-    {
-      icon: <FaShieldAlt className={styles.serviceIconInner} />,
-      title: t('cybersecurity'),
-      desc: t('cyberDesc'),
-      color: '#1E90FF'
+      title: { fa: 'مشاوره فناوری', en: 'Tech Consulting' },
+      description: {
+        fa: 'مشاوره تخصصی در زمینه فناوری اطلاعات و راهکارهای دیجیتال',
+        en: 'Expert consulting in IT and digital solutions'
+      },
+      icon: '🔍'
     }
   ];
 
-  const portfolioItems = [
+  const portfolioItems: PortfolioItem[] = [
     {
-      img: "https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-      title: t('ecommerce'),
-      desc: t('ecommerceDesc')
+      title: { fa: 'طراحی وبسایت', en: 'website designt' },
+      category: { fa: 'وبسایت', en: 'Website' },
+      image: websitedesign
     },
     {
-      img: "https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-      title: t('financeApp'),
-      desc: t('financeDesc')
+      title: { fa: 'اپلیکیشن موبایل', en: 'Mobile App' },
+      category: { fa: 'موبایل', en: 'Mobile' },
+      image: mobileapp
     },
+    
     {
-      img: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-      title: t('cms'),
-      desc: t('cmsDesc')
+      title: { fa: 'سیستم مدیریت', en: 'Management System' },
+      category: { fa: 'نرم افزار', en: 'Software' },
+      image: adminpanel
     }
+
+    
   ];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
-  };
+  const partners: Partner[] = [
+    { name: ' بنیاد برکت', logo: barakatLogo },
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.5
-      }
-    }
-  };
+  ];
 
-  const fadeIn = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.8 } }
-  };
+  const textDirection = language === 'fa' ? 'rtl' : 'ltr';
+  const textAlign = language === 'fa' ? 'right' : 'left';
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+// تابع toggleMenu
+const toggleMenu = () => {
+  setIsMenuOpen(!isMenuOpen);
+};
 
   return (
-    <div className={`${styles.app} ${darkMode ? styles.dark : ''}`}>
-      {/* Navigation */}
-      <nav className={styles.navbar}>
-        <motion.div 
-          className={styles.logo}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
+    <div className={`app ${theme}`} dir={textDirection}>
+      {/* Header */}
+      <header className="header">
+    <div className="container">
+      <div className="logo">
+        <span className="blue">{language === 'fa' ? 'فربود' : 'Farbod'}</span>
+        <span className="yellow">{language === 'fa' ? 'آران' : 'Aran'}</span>
+      </div>
+      
+      {/* دکمه همبرگر برای موبایل */}
+      <div className="controls">
+        <button onClick={toggleLanguage} className="language-toggle">
+          {language === 'fa' ? 'EN' : 'FA'}
+        </button>
+        <button onClick={toggleTheme} className="theme-toggle">
+          {theme === 'light' ? '🌙' : '☀️'}
+        </button>
+        <button 
+          className={`hamburger ${isMenuOpen ? 'open' : ''}`}
+          onClick={toggleMenu}
+          aria-label="منو"
         >
-          {language === 'fa' ? 'شرکت نوآوران' : 'Navaran Co.'}
-        </motion.div>
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
 
-        <div className={styles.navControls}>
-          <button onClick={toggleDarkMode} className={styles.themeToggle}>
-            {darkMode ? <FiSun /> : <FiMoon />}
-            <span>{t('darkMode')}</span>
-          </button>
-
-          <button onClick={toggleLanguage} className={styles.languageToggle}>
-            <FaLanguage />
-            <span>{t('language')}</span>
-          </button>
-
-          <button 
-            className={styles.menuButton}
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-          >
-            <div className={`${styles.hamburger} ${isMenuOpen ? styles.open : ''}`}>
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-          </button>
-        </div>
-
-        <AnimatePresence>
-          {(isMenuOpen || window.innerWidth > 768) && (
-            <motion.ul 
-              className={styles.navLinks}
-              initial={{ opacity: 0, x: language === 'fa' ? 100 : -100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: language === 'fa' ? 100 : -100 }}
-              transition={{ type: 'spring', stiffness: 100 }}
-            >
-              <li><a href="#home">{t('home')}</a></li>
-              <li><a href="#services">{t('services')}</a></li>
-              <li><a href="#portfolio">{t('portfolio')}</a></li>
-              <li><a href="#about">{t('about')}</a></li>
-              <li><a href="#contact">{t('contact')}</a></li>
-            </motion.ul>
-          )}
-        </AnimatePresence>
+      {/* منوی اصلی - برای دسکتاپ */}
+      <nav className="desktop-nav">
+        <ul>
+          <li><a href="#hero">{language === 'fa' ? 'صفحه اصلی' : 'Home'}</a></li>
+          <li><a href="#services">{language === 'fa' ? 'خدمات' : 'Services'}</a></li>
+          <li><a href="#portfolio">{language === 'fa' ? 'نمونه کارها' : 'Portfolio'}</a></li>
+          <li><a href="#partners">{language === 'fa' ? 'همکاران' : 'Partners'}</a></li>
+          <li><a href="#about">{language === 'fa' ? 'درباره ما' : 'About Us'}</a></li>
+          <li><a href="#contact">{language === 'fa' ? 'تماس' : 'Contact'}</a></li>
+        </ul>
       </nav>
+      
+      {/* منوی موبایل */}
+      <div className={`mobile-menu-backdrop ${isMenuOpen ? 'open' : ''}`} onClick={toggleMenu}></div>
+      <nav className={`mobile-nav ${isMenuOpen ? 'open' : ''}`}>
+        <ul>
+          <li><a href="#hero" onClick={toggleMenu}>{language === 'fa' ? 'صفحه اصلی' : 'Home'}</a></li>
+          <li><a href="#services" onClick={toggleMenu}>{language === 'fa' ? 'خدمات' : 'Services'}</a></li>
+          <li><a href="#portfolio" onClick={toggleMenu}>{language === 'fa' ? 'نمونه کارها' : 'Portfolio'}</a></li>
+          <li><a href="#partners" onClick={toggleMenu}>{language === 'fa' ? 'همکاران' : 'Partners'}</a></li>
+          <li><a href="#about" onClick={toggleMenu}>{language === 'fa' ? 'درباره ما' : 'About Us'}</a></li>
+          <li><a href="#contact" onClick={toggleMenu}>{language === 'fa' ? 'تماس' : 'Contact'}</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
 
       {/* Hero Section */}
-      <section id="home" className={styles.hero}>
-        <motion.div 
-          className={styles.heroContent}
-          initial="hidden"
-          animate="visible"
-          variants={containerVariants}
-        >
-          <motion.h1 variants={itemVariants}>{t('heroTitle')}</motion.h1>
-          <motion.p variants={itemVariants}>{t('heroSubtitle')}</motion.p>
-          <motion.button 
-            className={styles.ctaButton}
-            variants={itemVariants}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {t('ctaButton')}
-          </motion.button>
-        </motion.div>
-        
-        <motion.div 
-          className={styles.heroImage}
-          initial={{ opacity: 0, x: language === 'fa' ? 100 : -100 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3, duration: 0.8 }}
-        ></motion.div>
+      <section id="hero" className="hero">
+        <div className="container">
+          <div className="hero-content">
+            <h1 className="hero-title" >
+              {language === 'fa' ? 'راهکارهای دیجیتال برای کسب و کار شما' : 'Digital Solutions for Your Business'}
+            </h1>
+            <p className="hero-subtitle" style={{ textAlign }}>
+              {language === 'fa' ? 'ما به رشد کسب و کار شما با فناوری های نوین کمک می کنیم' : 'We help grow your business with modern technologies'}
+            </p>
+            <button className="cta-button">
+            <a href="#services">{language === 'fa' ? 'خدمات' : 'Services'}</a>
+             
+            </button>
+          </div>
+          <div className="hero-image">
+            <img src={Logof}  alt="Hero" />
+          </div>
+        </div>
       </section>
 
       {/* Services Section */}
-      <section id="services" className={styles.services}>
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeIn}
-        >
-          <h2 className={styles.sectionTitle}>{t('servicesTitle')}</h2>
-          <p className={styles.sectionSubtitle}>{t('servicesSubtitle')}</p>
-        </motion.div>
-        
-        <motion.div 
-          className={styles.servicesGrid}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={containerVariants}
-        >
-          {serviceItems.map((service, index) => (
-            <motion.div 
-              key={index}
-              className={styles.serviceCard}
-              variants={itemVariants}
-              whileHover={{ y: -10 }}
-            >
-              <div 
-                className={styles.serviceIcon}
-                style={{backgroundColor: service.color}}
-              >
-                {service.icon}
+      <section id="services" className="services">
+        <div className="container">
+          <h2 className="section-title" style={{textAlign:'center' }}>
+            {language === 'fa' ? 'خدمات ما' : 'Our Services'}
+          </h2>
+          <div className="services-grid">
+            {services.map((service, index) => (
+              <div key={index} className="service-card">
+                <div className="service-icon">{service.icon}</div>
+                <h3 className="service-title" style={{ textAlign }}>
+                  {service.title[language]}
+                </h3>
+                <p className="service-description" style={{ textAlign }}>
+                  {service.description[language]}
+                </p>
               </div>
-              <h3>{service.title}</h3>
-              <p>{service.desc}</p>
-            </motion.div>
-          ))}
-        </motion.div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Portfolio Section */}
-      <section id="portfolio" className={styles.portfolio}>
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeIn}
-        >
-          <h2 className={styles.sectionTitle}>{t('portfolioTitle')}</h2>
-          <p className={styles.sectionSubtitle}>{t('portfolioSubtitle')}</p>
-        </motion.div>
-        
-        <motion.div 
-          className={styles.portfolioGrid}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={containerVariants}
-        >
-          {portfolioItems.map((item, index) => (
-            <motion.div 
-              key={index}
-              className={styles.portfolioItem}
-              variants={itemVariants}
-              whileHover={{ scale: 1.03 }}
-            >
-              <img src={item.img} alt={item.title} />
-              <div className={styles.portfolioOverlay}>
-                <h3>{item.title}</h3>
-                <p>{item.desc}</p>
+      <section id="portfolio" className="portfolio">
+        <div className="container">
+          <h2 className="section-title" style={{ textAlign:'center'}}>
+            {language === 'fa' ? 'نمونه کارهای ما' : 'Our Portfolio'}
+          </h2>
+          <div className="portfolio-grid">
+            {portfolioItems.map((item, index) => (
+              <div key={index} className="portfolio-item">
+                <img src={item.image} alt={item.title[language]} />
+                <div className="portfolio-overlay">
+                  <h3 style={{ textAlign }}>{item.title[language]}</h3>
+                  <p style={{ textAlign }}>{item.category[language]}</p>
+                </div>
               </div>
-            </motion.div>
-          ))}
-        </motion.div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      {/* Clients Section */}
-      <section className={styles.clients}>
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeIn}
-        >
-          <h2 className={styles.sectionTitle}>{t('clientsTitle')}</h2>
-          <p className={styles.sectionSubtitle}>{t('clientsSubtitle')}</p>
-        </motion.div>
-        
-        <motion.div 
-          className={styles.clientLogos}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={containerVariants}
-        >
-          {[1, 2, 3, 4].map((item) => (
-            <motion.img 
-              key={item}
-              src={`https://via.placeholder.com/150x80/${darkMode ? '333333' : 'FFFFFF'}/1E90FF?text=Client+${item}`} 
-              alt={`Client ${item}`}
-              variants={itemVariants}
-              whileHover={{ scale: 1.1 }}
-            />
-          ))}
-        </motion.div>
+      {/* Partners Section */}
+      <section id="partners" className="partners">
+        <div className="container">
+          <h2 className="section-title" style={{ textAlign:'center' }}>
+            {language === 'fa' ? 'همکاران ما' : 'Our Partners'}
+          </h2>
+          <div className="partners-grid">
+            {partners.map((partner, index) => (
+              <div key={index} className="partner-logo">
+                <img src={partner.logo} alt={partner.name} />
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* About Section */}
-      <section id="about" className={styles.about}>
-        <motion.div 
-          className={styles.aboutImage}
-          initial={{ opacity: 0, x: language === 'fa' ? -100 : 100 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-        ></motion.div>
-        
-        <motion.div 
-          className={styles.aboutContent}
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3, duration: 0.8 }}
-        >
-          <h2 className={styles.sectionTitle}>{t('aboutTitle')}</h2>
-          <p>{t('aboutText1')}</p>
-          <p>{t('aboutText2')}</p>
-          
-          <motion.ul 
-            className={styles.aboutStats}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={containerVariants}
-          >
-            <motion.li variants={itemVariants}>
-              <span>100+</span>
-              <p>{language === 'fa' ? 'پروژه تکمیل شده' : 'Completed Projects'}</p>
-            </motion.li>
-            <motion.li variants={itemVariants}>
-              <span>50+</span>
-              <p>{language === 'fa' ? 'مشتری راضی' : 'Happy Clients'}</p>
-            </motion.li>
-            <motion.li variants={itemVariants}>
-              <span>30+</span>
-              <p>{language === 'fa' ? 'متخصص' : 'Experts'}</p>
-            </motion.li>
-          </motion.ul>
-        </motion.div>
+      <section id="about" className="about">
+        <div className="container">
+          <div className="about-image">
+            <img src={abus} alt="About Us" />
+          </div>
+          <div className="about-content">
+            <h2 className="section-title" style={{ textAlign:'center' }}>
+              {language === 'fa' ? 'درباره ما' : 'About Us'}
+            </h2>
+            <p style={{ textAlign }}>
+  {language === 'fa' ? 
+    // Persian Text
+    'معرفی برند: ایده پرداز فربود آران\n\nشرکت ایده پرداز فربود آران از سال ۱۳۹۶ با هدف پیشرفت در زمینه فناوری اطلاعات و الکترونیک تأسیس شده است. ما به‌عنوان یک شرکت نوآور و پیشرو، به طراحی و توسعه راه‌حل‌های الکترونیکی و نرم‌افزاری متنوع مشغول هستیم که به بهبود کیفیت زندگی و کارکرد صنایع مختلف کمک می‌کند.\n\nتیم ما متشکل از متخصصان با تجربه و جوان است که با بهره‌گیری از آخرین فناوری‌های روز، پروژه‌های خلاقانه و کارآمد را در زمینه‌های مختلف طراحی و پیاده‌سازی می‌کنند. ما به کیفیت، نوآوری و رضایت مشتریان خود اهمیت ویژه‌ای می‌دهیم و همواره در تلاشیم تا بهترین خدمات ممکن را ارائه دهیم.\n\nبا ایده پرداز فربود آران، شما می‌توانید به آینده‌ای پر از امکانات و نوآوری‌های دیجیتال امیدوار باشید. بیایید با هم دنیای جدیدی از فناوری را بسازیم!' : 
+    
+    // English Text
+    'Brand Introduction: Ideh Pardaz Farbod Aran\n\nIdeh Pardaz Farbod Aran Company was established in 2017 with the goal of advancing in the fields of information technology and electronics. As an innovative and pioneering company, we specialize in designing and developing diverse electronic and software solutions that enhance the quality of life and improve operations across various industries.\n\nOur team consists of experienced and young professionals who leverage the latest technologies to design and implement creative and efficient projects in different domains. We place great emphasis on quality, innovation, and customer satisfaction, always striving to deliver the best possible services.\n\nWith Ideh Pardaz Farbod Aran, you can look forward to a future full of digital possibilities and innovations. Let’s build a new world of technology together!'}
+</p>
+            <div className="stats">
+              <div className="stat">
+                <h3>10+</h3>
+                <p>{language === 'fa' ? 'سال تجربه' : 'Years Experience'}</p>
+              </div>
+              <div className="stat">
+                <h3>20+</h3>
+                <p>{language === 'fa' ? 'پروژه موفق' : 'Successful Projects'}</p>
+              </div>
+              <div className="stat">
+                <h3>40+</h3>
+                <p>{language === 'fa' ? 'مشتری راضی' : 'Happy Clients'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Footer */}
-      <footer id="contact" className={styles.footer}>
-        <motion.div 
-          className={styles.footerContent}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={containerVariants}
-        >
-          <motion.div className={styles.footerSection} variants={itemVariants}>
-            <h3>{language === 'fa' ? 'شرکت نوآوران' : 'Navaran Company'}</h3>
-            <p>{language === 'fa' ? 'ارائه دهنده راهکارهای دیجیتال و خدمات فناوری اطلاعات' : 'Provider of digital solutions and IT services'}</p>
-            <div className={styles.socialLinks}>
-              <a href="#"><FiLinkedin /></a>
-              <a href="#"><FiTwitter /></a>
-              <a href="#"><FiInstagram /></a>
+      <footer id="contact" className="footer">
+        <div className="container">
+          <div className="footer-content">
+            <div className="footer-section">
+              <h3>{language === 'fa' ? 'تماس با ما' : 'Contact Us'}</h3>
+              <p><span>📧</span> farbodaran@company.com</p>
+              <p><span>📞</span> {language === 'fa' ? '۰۹۹۹۱۰۵۶۹۶۶' : '09991056966'}</p>
+              <p><span>📍</span> {language === 'fa' ? 'یزد ,خیابان شهید چمران ,کارخانه نوآوری درخشان' : 'yazd, Chamran St,Noavari Darkhshan co.'}</p>
             </div>
-          </motion.div>
-          
-          <motion.div className={styles.footerSection} variants={itemVariants}>
-            <h3>{t('contact')}</h3>
-            <ul className={styles.contactInfo}>
-              <li><FiMapPin /> {t('address')}</li>
-              <li><FiPhone /> {t('phone')}</li>
-              <li><FiPhone /> {t('mobile')}</li>
-              <li><FiMail /> {t('email')}</li>
-            </ul>
-          </motion.div>
-          
-          <motion.div className={styles.footerSection} variants={itemVariants}>
-            <h3>{t('quickLinks')}</h3>
-            <ul className={styles.quickLinks}>
-              <li><a href="#home">{t('home')}</a></li>
-              <li><a href="#services">{t('services')}</a></li>
-              <li><a href="#portfolio">{t('portfolio')}</a></li>
-              <li><a href="#about">{t('about')}</a></li>
-              <li><a href="#contact">{t('contact')}</a></li>
-            </ul>
-          </motion.div>
-        </motion.div>
-        
-        <div className={styles.footerBottom}>
-          <p>{t('copyright')}</p>
+            <div className="footer-section">
+              <h3>{language === 'fa' ? 'لینک های مفید' : 'Quick Links'}</h3>
+              <ul>
+                <li><a href="#hero">{language === 'fa' ? 'صفحه اصلی' : 'Home'}</a></li>
+                <li><a href="#services">{language === 'fa' ? 'خدمات' : 'Services'}</a></li>
+                <li><a href="#portfolio">{language === 'fa' ? 'نمونه کارها' : 'Portfolio'}</a></li>
+                <li><a href="#about">{language === 'fa' ? 'درباره ما' : 'About Us'}</a></li>
+              </ul>
+            </div>
+            <div className="footer-section">
+              <h3>{language === 'fa' ? 'شبکه های اجتماعی' : 'Social Media'}</h3>
+              <div className="social-links">
+                <a href="#linkedin">LinkedIn</a>
+                <a href="#twitter">Twitter</a>
+                <a href="#instagram">Instagram</a>
+              </div>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <p>
+              &copy; {new Date().getFullYear()} {language === 'fa' ? 'تمامی حقوق محفوظ است' : 'All Rights Reserved'}
+            </p>
+          </div>
         </div>
       </footer>
     </div>
